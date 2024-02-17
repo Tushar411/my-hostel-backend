@@ -10,22 +10,25 @@ const roomRouter = require("./routes/room-routes");
 
 app.use(express.json());
 
+// Allow all origins temporarily
+app.use(cors());
+
 // Use the CORS handler --------
-const allowedOrigins = ['*'];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-}
+// const allowedOrigins = ['*'];
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// }
 
 //routing
-app.use('/users', cors(corsOptions), userRouter);
-app.use('/property', cors(corsOptions), propertyRouter);
-app.use('/room', cors(corsOptions), roomRouter)
+app.use('/users', userRouter);
+app.use('/property', propertyRouter);
+app.use('/room', roomRouter)
 
 // Mongoose connection ----------
 const databaseURL = process.env.DATABASE_URL;
@@ -41,4 +44,4 @@ mongoose.connect(
 })
 
 // handle CORS
-app.options('*', cors());
+// app.options('*', cors());
