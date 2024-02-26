@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 const Room = require('./room');
+const User = require('./user');
 const Schema = mongoose.Schema;
 
 const Property = new Schema({
     name: {
         type: String
+    },
+    ownerId: {
+        type:  mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     propertyType: {
         type: String,

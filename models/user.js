@@ -47,6 +47,9 @@ const userSchema = new Schema({
     guardianName: {
         type: String
     },
+    properties: {
+        type: Array
+    }
     // guardianMobileNo: {
     //     type: String
     // },

@@ -8,9 +8,10 @@ const getPropertyById = async (req, res) => {
         if (!property) {
             return res.status(404).json({ code: 404, status_code: "not_found", message: "Property not found" });
         }
-        return res.status(200).json({ data: property, status_code: success, message: "property fetched successfully" })
+        return res.status(200).json({ data: property, status_code: "success", message: "property fetched successfully" })
     }
     catch (error) {
+        console.error(error);
         return res.status(500).json({ code: 500, status_code: error, message: "something went wrong" })
     }
 }
