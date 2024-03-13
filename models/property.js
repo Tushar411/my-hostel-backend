@@ -8,7 +8,7 @@ const Property = new Schema({
         type: String
     },
     ownerId: {
-        type:  mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     propertyType: {
@@ -43,6 +43,7 @@ const Property = new Schema({
         // modified: mongoose.Schema.Types.Date,
         // note: String,
     },
+    // TODO: in future we will add additional properties of city, state, pincode 
     city: {
         type: String
     },
@@ -86,15 +87,9 @@ const Property = new Schema({
     },
     note: {
         type: String
-    },
-    created: {
-        type: Date,
-        default: Date.now,
-    },
-    modified: {
-        type: Date,
-        default: Date.now,
-    },
+    }
+}, {
+    timestamps: true, 
 })
 
-module.exports = mongoose.model('Property', Property);
+module.exports = mongoose.model('Property', Property);  

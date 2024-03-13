@@ -3,9 +3,10 @@ const Room = require('../models/room');
 
 // get all rooms by propertyId
 const getAllRooms = async (req, res) => {
-    const propertyId = req.body
+    const { propertyId } = req.params
     try {
-        const rooms = await Room.find({ propertyId: propertyId });
+        const rooms = await Room.find({ propertyId: propertyId })
+        // .sort({'name': 1});
 
         return res.status(200).json({ data: rooms, code: 200, status_code: "success", message: "Rooms fetched successfull" });
     }
@@ -147,10 +148,75 @@ const checkForDuplicateRooms = async (propertyId, roomNames) => {
 };
 
 
+//update/add multiple rooms
+const updateMultipleRooms = async (req, res) => {
+    const { propertyId } = req.params;
+    const roomUpdates = req.body;
+
+    try {
+        let encounteredRoomNames = new Set();
+        const updatedRooms = await Promise.all(
+            roomUpdates.map(async (roomUpdate) => {
+                const { name, ...newData } = roomUpdate;
+                  // Check if the room name has already been encountered in the current iteration
+                if (encounteredRoomNames.has(name)) {
+                    return res.status(400).json({
+                        code: 400,
+                        status_code: "error",
+                        message: `Duplicate room name found: ${name}`
+                    });
+                }
+
+                // Add the room name to the Set to avoid duplicates within the current iteration
+                encounteredRoomNames.add(name);
+
+                // Check if a room with the same name and propertyId exists
+                const existingRoom = await Room.findOne({ name, propertyId });
+
+                if (existingRoom) {
+                    // If the room exists, update it
+                    const updatedRoom = await Room.findByIdAndUpdate(existingRoom._id, newData, { new: true });
+
+                    return updatedRoom;
+                } else {
+                    // If the room doesn't exist, create a new one
+                    const newRoom = new Room({ ...roomUpdate });
+                    const savedRoom = await newRoom.save();
+
+                    return savedRoom;
+                }
+            })
+        );
+        // Find and delete rooms that have the same propertyId but are not present in roomUpdates
+        const deletedRooms = await Room.find({ propertyId, _id: { $nin: updatedRooms.map(room => room._id) } });
+
+        // Use a single deleteMany query to delete rooms and update the Property's rooms array
+        const deletionResult = await Room.deleteMany({ propertyId, _id: { $in: deletedRooms.map(room => room._id) } });
+
+        // Update the Property's rooms array
+        await Property.findByIdAndUpdate(
+            propertyId,
+            { $pullAll: { rooms: deletedRooms.map(room => room._id) } }
+        );
+
+        // Find the Property by propertyId and update its rooms array
+        const updatedProperty = await Property.findOneAndUpdate(
+            { _id: propertyId },
+            { $addToSet: { rooms: { $each: updatedRooms.map(room => room._id) } } },
+            { new: true }
+        );
+        return res.status(200).json({ data: updatedRooms, deleted: deletedRooms, property: updatedProperty, code: 200, status_code: "success", message: "Rooms updated and added successfully" });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ code: 500, status_code: "error", message: "Something went wrong during update", error: error.message });
+    }
+};
+
 
 module.exports = {
     getAllRooms,
     addRoom,
     updateRoom,
     addMultipleRooms,
+    updateMultipleRooms
 }

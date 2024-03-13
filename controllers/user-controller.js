@@ -7,7 +7,6 @@ const { generateOTP, saveOTP } = require("../services/user-otp-service");
 const sendOTPMessage = async (req, res) => {
     const data = req.body;
     const { mobileNo } = data;
-    console.log("mobileNo", mobileNo)
 
     try {
         const otp = await generateOTP();
@@ -29,25 +28,35 @@ const sendOTPMessage = async (req, res) => {
     }
 };
 
-const signupOTP = async(req, res) => {
+const signupOTP = async (req, res) => {
     const data = req.body;
     const { mobileNo } = data;
-    console.log("mobileNo", mobileNo)
-    try{
+    
+    try {
         const existingUser = await User.findOne({ mobileNo: mobileNo })
         if (existingUser) {
             return res.status(400).json({ code: 400, status_code: 'error', message: 'user already exist' })
         }
         await sendOTPMessage(req, res);
     }
-    catch (error){
-        return res.status(500).json({code:500, status_code:"error"})
+    catch (error) {
+        return res.status(500).json({ code: 500, status_code: "error" })
     }
 }
 
 const signup = async (req, res) => {
     //Existing user check
     const { username, mobileNo, password } = req.body;
+
+    // Check if the password is provided
+    if (!password) {
+        return res.status(400).json({
+            code: 400,
+            status_code: 'error',
+            message: 'Password is required'
+        });
+    }
+
     try {
         const existingUser = await User.findOne({ mobileNo: mobileNo })
         if (existingUser) {
@@ -79,7 +88,7 @@ const signin = async (req, res) => {
         if (!existingUser) {
             return res.status(404).json({ message: "user not found" });
         }
-        console.log(existingUser)
+        
         const matchPassword = await bcrypt.compare(password, existingUser.password);
         if (!matchPassword) {
             return res.status(400).json({ message: "invalid credentials" });
@@ -95,25 +104,25 @@ const signin = async (req, res) => {
 }
 
 const updatePassword = async (req, res) => {
-    const {mobileNo, newPassword} = req.body;
-    try{
-        const userDetail = await User.findOne({mobileNo:mobileNo});
-        if(!userDetail){
-            return res.status(404).json({code:404, status_code:"Not Found", message: "user not found"});
+    const { mobileNo, newPassword } = req.body;
+    try {
+        const userDetail = await User.findOne({ mobileNo: mobileNo });
+        if (!userDetail) {
+            return res.status(404).json({ code: 404, status_code: "Not Found", message: "user not found" });
         }
         //Hashed password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updateUser = await User.findOneAndUpdate({mobileNo:mobileNo},{password: hashedPassword});
+        const updateUser = await User.findOneAndUpdate({ mobileNo: mobileNo }, { password: hashedPassword });
 
-        if(!updateUser){
-            return res.status(500).json({code:500, status_code:"error", message:"failed to update password"});
+        if (!updateUser) {
+            return res.status(500).json({ code: 500, status_code: "error", message: "failed to update password" });
         }
 
-        return res.status(200).json({code:200, status_code:"success", message:"password updated successfully"});
+        return res.status(200).json({ code: 200, status_code: "success", message: "password updated successfully" });
     }
-    catch (error){
+    catch (error) {
         console.log("error")
-        return res.status(500).json({code:500, status_code:"error", message:"something went wrong"})
+        return res.status(500).json({ code: 500, status_code: "error", message: "something went wrong" })
     }
 }
 

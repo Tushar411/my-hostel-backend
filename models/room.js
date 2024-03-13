@@ -10,14 +10,6 @@ const Bed = new Schema ({
     rent: {
         type: Number,
     },
-    // propertyId: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Property'
-    // },
-    // roomId: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Room'
-    // },
     status: {
         type: String,
         enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'],

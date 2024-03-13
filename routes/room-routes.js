@@ -1,12 +1,13 @@
 const express = require("express");
-const { getAllRooms, addRoom, updateRoom, addMultipleRooms } = require("../controllers/room-controller");
+const { getAllRooms, addRoom, updateRoom, addMultipleRooms, updateMultipleRooms } = require("../controllers/room-controller");
 const { addBed, addBedsAndRoom } = require("../controllers/bed-controller");
 const router = express.Router();
 
-router.get("/all-rooms", getAllRooms);
+router.get("/all/:propertyId", getAllRooms);
 router.post("/add", addRoom);
 router.post("/update/:roomId", updateRoom);
 router.put("/add-multiple/:propertyId", addMultipleRooms);
+router.put("/update-multiple/:propertyId", updateMultipleRooms)
 //bed routes
 router.post("/add-bed", addBed);
 
